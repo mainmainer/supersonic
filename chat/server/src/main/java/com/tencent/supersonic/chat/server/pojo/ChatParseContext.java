@@ -22,4 +22,11 @@ public class ChatParseContext {
         }
         return agent.containsNL2SQLTool();
     }
+
+    public boolean enableKnowledge() {
+        if (agent == null) {
+            return false;
+        }
+        return agent.containsNL2SQLTool();
+    }
 }
