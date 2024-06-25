@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.tencent.supersonic.common.config.LLMConfig;
+import com.tencent.supersonic.common.config.VisualConfig;
 import com.tencent.supersonic.common.pojo.RecordInfo;
 import com.tencent.supersonic.common.util.JsonUtil;
 import lombok.Data;
@@ -34,6 +35,7 @@ public class Agent extends RecordInfo {
     private String agentConfig;
     private LLMConfig llmConfig;
     private MultiTurnConfig multiTurnConfig;
+    private VisualConfig visualConfig;
 
     public List<String> getTools(AgentToolType type) {
         Map map = JSONObject.parseObject(agentConfig, Map.class);
