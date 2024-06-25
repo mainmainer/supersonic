@@ -27,6 +27,7 @@ public class ChatParseContext {
         if (agent == null) {
             return false;
         }
-        return agent.containsNL2SQLTool();
+
+        return agent.containsKnowledge();
     }
 }

@@ -23,6 +23,9 @@ public class EmbeddingConfig {
     @Value("${s2.embedding.meta.collection:meta_collection}")
     private String metaCollectionName;
 
+    @Value("${s2.embedding.knowledge.collection:knowledgeBase_collection}")
+    private String knowledgeBaseCollectionName;
+
     @Value("${s2.embedding.nResult:1}")
     private int nResult;
 

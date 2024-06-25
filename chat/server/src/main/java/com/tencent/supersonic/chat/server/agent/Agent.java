@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.tencent.supersonic.common.config.LLMConfig;
 import com.tencent.supersonic.common.pojo.RecordInfo;
+import com.tencent.supersonic.common.util.JsonUtil;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
 
@@ -83,7 +84,17 @@ public class Agent extends RecordInfo {
     }
 
     public boolean containsKnowledge() {
-        return !CollectionUtils.isEmpty(getParserTools(AgentToolType.KNOWLEDGE_BASE));
+        if (Objects.isNull(this.agentConfig)) {
+            return false;
+        }
+        AgentConfig agentConfig = JsonUtil.toObject(this.agentConfig, AgentConfig.class);
+        List<AgentTool> tools = agentConfig.getTools();
+        for (AgentTool agentTool : tools) {
+            if (agentTool.getType().equals(AgentToolType.KNOWLEDGE_BASE)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Set<Long> getDataSetIds() {
