@@ -9,13 +9,12 @@ import com.tencent.supersonic.chat.server.agent.AgentTool;
 import com.tencent.supersonic.chat.server.agent.AgentToolType;
 import com.tencent.supersonic.chat.server.service.AgentService;
 import com.tencent.supersonic.common.config.EmbeddingConfig;
+import com.tencent.supersonic.common.service.EmbeddingService;
 import com.tencent.supersonic.common.util.JsonUtil;
 import com.tencent.supersonic.common.util.MarkDownUtil;
 import com.tencent.supersonic.common.util.PDFUtil;
-import dev.langchain4j.store.embedding.ComponentFactory;
-import dev.langchain4j.store.embedding.EmbeddingQuery;
-import dev.langchain4j.store.embedding.InMemoryS2EmbeddingStore;
-import dev.langchain4j.store.embedding.S2EmbeddingStore;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.store.embedding.TextSegmentConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -34,7 +33,8 @@ public class KnowledgeBaseDemo implements CommandLineRunner {
     @Autowired
     protected AgentService agentService;
 
-    private S2EmbeddingStore s2EmbeddingStore = ComponentFactory.getS2EmbeddingStore();
+    @Autowired
+    private EmbeddingService embeddingService;
 
     @Autowired
     private EmbeddingConfig embeddingConfig;
@@ -64,29 +64,27 @@ public class KnowledgeBaseDemo implements CommandLineRunner {
             }
         }
         for (String text : sentenceList) {
-            //log.info("sentenceList:{}", text);
-            System.out.println(text);
+            log.info("sentenceList:{}", text);
+            //System.out.println(text);
         }
-        List<EmbeddingQuery> queries = sentenceList.stream().map(sentence -> {
-            EmbeddingQuery embeddingQuery = new EmbeddingQuery();
-            embeddingQuery.setQueryId(String.valueOf(sentence.hashCode()));
-            embeddingQuery.setQuery(sentence);
-            embeddingQuery.setQueryEmbedding(null);
-            return embeddingQuery;
+        List<TextSegment> queries = sentenceList.stream().map(sentence -> {
+            TextSegment query = TextSegment.from(sentence);
+            TextSegmentConvert.addQueryId(query, String.valueOf(sentence.hashCode()));
+            return query;
         }).collect(Collectors.toList());
 
         try {
-            s2EmbeddingStore.addCollection(embeddingConfig.getKnowledgeBaseCollectionName());
-            s2EmbeddingStore.addQuery(embeddingConfig.getKnowledgeBaseCollectionName(), queries);
+            embeddingService.addCollection(embeddingConfig.getKnowledgeBaseCollectionName());
+            embeddingService.addQuery(embeddingConfig.getKnowledgeBaseCollectionName(), queries);
         } catch (Exception e) {
             log.error("Failed to add bench mark demo data", e);
         }
-        if (s2EmbeddingStore instanceof InMemoryS2EmbeddingStore) {
-            log.info("start persistentToFile");
-            ((InMemoryS2EmbeddingStore) s2EmbeddingStore).persistentIndexToFile(
-                    embeddingConfig.getKnowledgeBaseCollectionName());
-            log.info("end persistentToFile");
-        }
+        //if (s2EmbeddingStore instanceof InMemoryS2EmbeddingStore) {
+        //    log.info("start persistentToFile");
+        //    ((InMemoryS2EmbeddingStore) s2EmbeddingStore).persistentIndexToFile(
+        //            embeddingConfig.getKnowledgeBaseCollectionName());
+        //    log.info("end persistentToFile");
+        //}
     }
 
     private void addAgent() {

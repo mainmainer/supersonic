@@ -94,8 +94,8 @@ langchain4j:
       # Replace with your LLM configs
       # Note: The default API key `demo` is provided by langchain4j community
       #       which limits 1000 tokens per request.
-      base-url: ${OPENAI_API_BASE:https://api.openai.com/v1}
-      api-key: ${OPENAI_API_KEY:demo}
+      base-url: ${OPENAI_API_BASE:http://v2.open.venus.oa.com/llmproxy}
+      api-key: ${OPENAI_API_KEY:WUQfYszaCuvO1CR9YcSasjC1@2719}
       model-name: ${OPENAI_MODEL_NAME:gpt-3.5-turbo}
       temperature: ${OPENAI_TEMPERATURE:0.0}
       timeout: ${OPENAI_TIMEOUT:PT60S}

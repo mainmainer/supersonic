@@ -59,7 +59,7 @@ public class PDFUtil {
 
     public static void main(String[] args) {
         String path = "/Users/gezuopeng/Downloads/Corrector实现解析.pdf";
-        path="/Users/gezuopeng/IdeaProjects/supersonic/launchers/standalone/target/classes/doc/Corrector实现解析.pdf";
+        path = "/Users/gezuopeng/IdeaProjects/supersonic/launchers/standalone/target/classes/doc/Corrector实现解析.pdf";
         //String doc = readPDF(path);
         List<String> docList = getSentence(path);
         //Arrays.stream(doc.split("\n")).map(text -> text.trim()).collect(Collectors.toList());

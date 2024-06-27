@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.tencent.supersonic.chat.server.pojo.ChatParseContext;
 import com.tencent.supersonic.common.config.EmbeddingConfig;
 import com.tencent.supersonic.common.pojo.Constants;
+import com.tencent.supersonic.common.service.EmbeddingService;
 import com.tencent.supersonic.common.util.ContextUtils;
 import com.tencent.supersonic.common.util.S2ChatModelProvider;
 import com.tencent.supersonic.headless.api.pojo.SchemaElement;
@@ -15,10 +16,8 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.input.Prompt;
 import dev.langchain4j.model.input.PromptTemplate;
 import dev.langchain4j.model.output.Response;
-import dev.langchain4j.store.embedding.ComponentFactory;
 import dev.langchain4j.store.embedding.RetrieveQuery;
 import dev.langchain4j.store.embedding.RetrieveQueryResult;
-import dev.langchain4j.store.embedding.S2EmbeddingStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
@@ -39,20 +38,20 @@ public class KnowledgeBaseParser implements ChatParser {
             + "#相关背景基础知识: %s\n";
     private static final int retrieveNum = 30;
 
-    private S2EmbeddingStore s2EmbeddingStore = ComponentFactory.getS2EmbeddingStore();
-
     @Override
     public void parse(ChatParseContext chatParseContext, ParseResp parseResp) {
+        EmbeddingService embeddingService = ContextUtils.getBean(EmbeddingService.class);
         Long startTime = System.currentTimeMillis();
         if (!chatParseContext.enableKnowledge()) {
             return;
         }
+        log.info("knowledgeBaseParser parse!");
         EmbeddingConfig embeddingConfig = ContextUtils.getBean(EmbeddingConfig.class);
         List<String> queryTextsList = new ArrayList<>();
         queryTextsList.add(parseResp.getQueryText());
         RetrieveQuery retrieveQuery = RetrieveQuery.builder().queryTextsList(queryTextsList).build();
 
-        List<RetrieveQueryResult> retrieveQueryResultList = s2EmbeddingStore.retrieveQuery(
+        List<RetrieveQueryResult> retrieveQueryResultList = embeddingService.retrieveQuery(
                 embeddingConfig.getKnowledgeBaseCollectionName(), retrieveQuery, retrieveNum);
         if (CollectionUtils.isEmpty(retrieveQueryResultList)) {
             return;

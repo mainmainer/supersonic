@@ -46,11 +46,15 @@ public class GroupByReplaceVisitor implements GroupByVisitor {
                 }
                 if (expression instanceof Function) {
                     try {
+                        log.info("replaceColumn:{}", replaceColumn);
+                        log.info("expression:{}", expression);
                         Expression element = CCJSqlParserUtil.parseExpression(replaceColumn);
                         ExpressionList<Expression> expressionList = new ExpressionList<Expression>();
                         expressionList.add(element);
+                        log.info("Parameters:{}", ((Function) expression).getParameters());
                         if (((Function) expression).getParameters().size() > 1) {
                             ((Function) expression).getParameters().stream().skip(1).forEach(e -> {
+                                log.info("expressionList:{}", e);
                                 expressionList.add((Function) e);
                             });
                         }
