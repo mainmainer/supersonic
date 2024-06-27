@@ -61,10 +61,18 @@ const ParseTip: React.FC<Props> = ({
           <CheckCircleFilled className={`${prefixCls}-step-icon`} />
           <div className={`${prefixCls}-step-title`}>
             {tipTitle}
-            {!tipNode && <Loading />}
+            {tipNode === undefined && <Loading />}
           </div>
         </div>
-        {tipNode && <div className={`${prefixCls}-content-container`}>{tipNode}</div>}
+        {(tipNode || tipNode === null) && (
+          <div
+            className={`${prefixCls}-content-container ${
+              tipNode === null ? `${prefixCls}-empty-content-container` : ''
+            }`}
+          >
+            {tipNode}
+          </div>
+        )}
       </div>
     );
   };
@@ -121,7 +129,6 @@ const ParseTip: React.FC<Props> = ({
 
   const getTipNode = () => {
     const dimensionItems = dimensions?.filter(item => item.type === 'DIMENSION');
-
     const itemValueClass = `${prefixCls}-tip-item-value`;
     const entityId = dimensionFilters?.length > 0 ? dimensionFilters[0].value : undefined;
     const entityAlias = entity?.alias?.[0]?.split('.')?.[0];
@@ -311,7 +318,7 @@ const ParseTip: React.FC<Props> = ({
         </div>
       )}
     </div>,
-    isSimpleMode ? <MarkDown markdown={textInfo} /> : tipNode
+    isSimpleMode ? <MarkDown markdown={textInfo} /> : queryMode === 'PLAIN_TEXT' ? null : tipNode
   );
 };
 
