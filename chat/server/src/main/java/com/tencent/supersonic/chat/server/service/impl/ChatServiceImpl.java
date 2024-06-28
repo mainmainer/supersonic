@@ -17,7 +17,6 @@ import com.tencent.supersonic.chat.server.service.ChatService;
 import com.tencent.supersonic.chat.server.util.ComponentFactory;
 import com.tencent.supersonic.chat.server.util.QueryReqConverter;
 import com.tencent.supersonic.common.util.BeanMapper;
-import com.tencent.supersonic.common.util.ContextUtils;
 import com.tencent.supersonic.headless.api.pojo.SemanticParseInfo;
 import com.tencent.supersonic.headless.api.pojo.request.DimensionValueReq;
 import com.tencent.supersonic.headless.api.pojo.request.QueryDataReq;
@@ -45,6 +44,8 @@ public class ChatServiceImpl implements ChatService {
     private ChatQueryService chatQueryService;
     @Autowired
     private RetrieveService retrieveService;
+    @Autowired
+    private AgentService agentService;
     private List<ChatParser> chatParsers = ComponentFactory.getChatParsers();
     private List<ChatExecutor> chatExecutors = ComponentFactory.getChatExecutors();
     private List<ParseResultProcessor> parseResultProcessors = ComponentFactory.getParseProcessors();
@@ -95,10 +96,22 @@ public class ChatServiceImpl implements ChatService {
         return queryResult;
     }
 
+    @Override
+    public QueryResult parseAndExecute(ChatParseReq chatParseReq) {
+        ParseResp parseResp = performParsing(chatParseReq);
+        ChatExecuteReq chatExecuteReq = new ChatExecuteReq();
+        chatExecuteReq.setQueryId(parseResp.getQueryId());
+        chatExecuteReq.setChatId(chatParseReq.getChatId());
+        chatExecuteReq.setUser(chatParseReq.getUser());
+        chatExecuteReq.setAgentId(chatParseReq.getAgentId());
+        chatExecuteReq.setQueryText(chatParseReq.getQueryText());
+        chatExecuteReq.setParseId(parseResp.getSelectedParses().get(0).getId());
+        return performExecution(chatExecuteReq);
+    }
+
     private ChatParseContext buildParseContext(ChatParseReq chatParseReq) {
         ChatParseContext chatParseContext = new ChatParseContext();
         BeanMapper.mapper(chatParseReq, chatParseContext);
-        AgentService agentService = ContextUtils.getBean(AgentService.class);
         Agent agent = agentService.getAgent(chatParseReq.getAgentId());
         chatParseContext.setAgent(agent);
         QueryReq queryReq = QueryReqConverter.buildText2SqlQueryReq(chatParseContext);
@@ -134,6 +147,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Object queryDimensionValue(DimensionValueReq dimensionValueReq, User user) throws Exception {
+        Integer agentId = dimensionValueReq.getAgentId();
+        Agent agent = agentService.getAgent(agentId);
+        dimensionValueReq.setDataSetIds(agent.getDataSetIds());
         return chatQueryService.queryDimensionValue(dimensionValueReq, user);
     }
 
