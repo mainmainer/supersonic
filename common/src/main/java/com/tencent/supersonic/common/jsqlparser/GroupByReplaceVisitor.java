@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -51,7 +52,7 @@ public class GroupByReplaceVisitor implements GroupByVisitor {
                         expressionList.add(element);
                         if (((Function) expression).getParameters().size() > 1) {
                             ((Function) expression).getParameters().stream().skip(1).forEach(e -> {
-                                expressionList.add((Function) e);
+                                expressionList.add((StringValue) e);
                             });
                         }
                         ((Function) expression).setParameters(expressionList);
