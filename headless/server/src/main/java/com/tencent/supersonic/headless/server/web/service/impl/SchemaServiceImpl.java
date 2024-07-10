@@ -102,13 +102,13 @@ public class SchemaServiceImpl implements SchemaService {
     private boolean schemaCacheEnable;
 
     public SchemaServiceImpl(ModelService modelService,
-            DimensionService dimensionService,
-            MetricService metricService,
-            DomainService domainService,
-            DataSetService dataSetService,
-            ModelRelaService modelRelaService,
-            StatUtils statUtils, TagMetaService tagService,
-            TermService termService, DatabaseService databaseService) {
+                             DimensionService dimensionService,
+                             MetricService metricService,
+                             DomainService domainService,
+                             DataSetService dataSetService,
+                             ModelRelaService modelRelaService,
+                             StatUtils statUtils, TagMetaService tagService,
+                             TermService termService, DatabaseService databaseService) {
         this.modelService = modelService;
         this.dimensionService = dimensionService;
         this.metricService = metricService;
@@ -370,6 +370,8 @@ public class SchemaServiceImpl implements SchemaService {
             semanticSchemaResp.setModelRelas(modelRelas);
             semanticSchemaResp.setModelIds(modelIds);
             semanticSchemaResp.setSchemaType(SchemaType.VIEW);
+            semanticSchemaResp.setDataSetResp(new DataSetResp());
+            semanticSchemaResp.getDataSetResp().setName(dataSetSchemaResp.getName());
         } else if (!CollectionUtils.isEmpty(schemaFilterReq.getModelIds())) {
             List<ModelSchemaResp> modelSchemaResps = fetchModelSchemaResps(schemaFilterReq.getModelIds());
             semanticSchemaResp.setMetrics(modelSchemaResps.stream().map(ModelSchemaResp::getMetrics)

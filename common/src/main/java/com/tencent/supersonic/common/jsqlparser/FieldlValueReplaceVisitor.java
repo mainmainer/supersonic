@@ -21,6 +21,7 @@ import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -63,6 +64,9 @@ public class FieldlValueReplaceVisitor extends ExpressionVisitorAdapter {
         }
         Column column = (Column) inExpression.getLeftExpression();
         Map<String, String> valueMap = filedNameToValueMap.get(column.getColumnName());
+        if (inExpression.getRightExpression() instanceof ParenthesedSelect) {
+            return;
+        }
         ExpressionList rightItemsList = (ExpressionList) inExpression.getRightExpression();
         List<Expression> expressions = rightItemsList.getExpressions();
         List<String> values = new ArrayList<>();

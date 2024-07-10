@@ -57,7 +57,7 @@ public class QueryReqConverter {
     private SqlGenerateUtils sqlGenerateUtils;
 
     public QueryStatement convert(QuerySqlReq querySQLReq,
-            SemanticSchemaResp semanticSchemaResp) throws Exception {
+                                  SemanticSchemaResp semanticSchemaResp) throws Exception {
 
         if (semanticSchemaResp == null) {
             return new QueryStatement();
@@ -67,7 +67,7 @@ public class QueryReqConverter {
         //2.functionName corrector
         functionNameCorrector(querySQLReq, semanticSchemaResp);
         //3.correct tableName
-        correctTableName(querySQLReq);
+        correctTableName(querySQLReq, semanticSchemaResp);
 
         String tableName = SqlSelectHelper.getTableName(querySQLReq.getSql());
         if (StringUtils.isEmpty(tableName)) {
@@ -236,9 +236,15 @@ public class QueryReqConverter {
         return elements.stream();
     }
 
-    public void correctTableName(QuerySqlReq querySqlReq) {
+    public void correctTableName(QuerySqlReq querySqlReq, SemanticSchemaResp semanticSchemaResp) {
         String sql = querySqlReq.getSql();
-        sql = SqlReplaceHelper.replaceTable(sql,
+        String oriDataSetName = null;
+        if (Objects.nonNull(querySqlReq.getDataSetName())) {
+            oriDataSetName = querySqlReq.getDataSetName();
+        } else if (Objects.nonNull(semanticSchemaResp.getDataSetResp())) {
+            oriDataSetName = semanticSchemaResp.getDataSetResp().getName();
+        }
+        sql = SqlReplaceHelper.replaceTable(sql, oriDataSetName,
                 Constants.TABLE_PREFIX + querySqlReq.getDataSetId());
         log.debug("correctTableName after:{}", sql);
         querySqlReq.setSql(sql);
@@ -254,7 +260,7 @@ public class QueryReqConverter {
     }
 
     private void generateDerivedMetric(SemanticSchemaResp semanticSchemaResp, AggOption aggOption,
-            DataSetQueryParam viewQueryParam) {
+                                       DataSetQueryParam viewQueryParam) {
         String sql = viewQueryParam.getSql();
         for (MetricTable metricTable : viewQueryParam.getTables()) {
             Set<String> measures = new HashSet<>();
@@ -276,8 +282,8 @@ public class QueryReqConverter {
     }
 
     private void generateDerivedMetric(SemanticSchemaResp semanticSchemaResp, AggOption aggOption,
-            List<String> metrics, List<String> dimensions,
-            Set<String> measures, Map<String, String> replaces) {
+                                       List<String> metrics, List<String> dimensions,
+                                       Set<String> measures, Map<String, String> replaces) {
         List<MetricSchemaResp> metricResps = semanticSchemaResp.getMetrics();
         List<DimSchemaResp> dimensionResps = semanticSchemaResp.getDimensions();
         // check metrics has derived

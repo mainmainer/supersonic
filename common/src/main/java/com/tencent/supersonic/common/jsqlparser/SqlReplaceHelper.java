@@ -428,7 +428,7 @@ public class SqlReplaceHelper {
         }
     }
 
-    public static String replaceTable(String sql, String tableName) {
+    public static String replaceTable(String sql, String oriTableName, String tableName) {
         if (StringUtils.isEmpty(tableName)) {
             return sql;
         }
@@ -440,7 +440,7 @@ public class SqlReplaceHelper {
                 if (plainSelect.getFromItem() instanceof Table) {
                     Table table = (Table) plainSelect.getFromItem();
                     if (!withNameList.contains(table.getName())) {
-                        replaceSingleTable(plainSelect, tableName);
+                        replaceSingleTable(plainSelect, oriTableName, tableName);
                     }
                 }
                 if (plainSelect.getFromItem() instanceof ParenthesedSelect) {
@@ -448,7 +448,7 @@ public class SqlReplaceHelper {
                     PlainSelect subPlainSelect = parenthesedSelect.getPlainSelect();
                     Table table = (Table) subPlainSelect.getFromItem();
                     if (!withNameList.contains(table.getName())) {
-                        replaceSingleTable(subPlainSelect, tableName);
+                        replaceSingleTable(subPlainSelect, oriTableName, tableName);
                     }
                 }
             });
@@ -456,15 +456,15 @@ public class SqlReplaceHelper {
         }
         if (selectStatement instanceof PlainSelect) {
             PlainSelect plainSelect = (PlainSelect) selectStatement;
-            replaceSingleTable(plainSelect, tableName);
-            replaceSubTable(plainSelect, tableName);
+            replaceSingleTable(plainSelect, oriTableName, tableName);
+            replaceSubTable(plainSelect, oriTableName, tableName);
         } else if (selectStatement instanceof SetOperationList) {
             SetOperationList setOperationList = (SetOperationList) selectStatement;
             if (!CollectionUtils.isEmpty(setOperationList.getSelects())) {
                 setOperationList.getSelects().forEach(subSelectBody -> {
                     PlainSelect subPlainSelect = (PlainSelect) subSelectBody;
-                    replaceSingleTable(subPlainSelect, tableName);
-                    replaceSubTable(subPlainSelect, tableName);
+                    replaceSingleTable(subPlainSelect, oriTableName, tableName);
+                    replaceSubTable(subPlainSelect, oriTableName, tableName);
                 });
             }
         }
@@ -472,11 +472,11 @@ public class SqlReplaceHelper {
         return selectStatement.toString();
     }
 
-    public static void replaceSubTable(PlainSelect plainSelect, String tableName) {
+    public static void replaceSubTable(PlainSelect plainSelect, String oriTableName, String tableName) {
         if (plainSelect.getFromItem() instanceof ParenthesedSelect) {
             ParenthesedSelect parenthesedSelect = (ParenthesedSelect) plainSelect.getFromItem();
             PlainSelect subPlainSelect = parenthesedSelect.getPlainSelect();
-            replaceSingleTable(subPlainSelect, tableName);
+            replaceSingleTable(subPlainSelect, oriTableName, tableName);
         }
         List<Join> joinList = plainSelect.getJoins();
         if (CollectionUtils.isEmpty(joinList)) {
@@ -485,12 +485,12 @@ public class SqlReplaceHelper {
         for (Join join : joinList) {
             if (join.getFromItem() instanceof ParenthesedSelect) {
                 ParenthesedSelect parenthesedSelect = (ParenthesedSelect) join.getFromItem();
-                replaceSingleTable(parenthesedSelect.getPlainSelect(), tableName);
+                replaceSingleTable(parenthesedSelect.getPlainSelect(), oriTableName, tableName);
             }
         }
     }
 
-    public static void replaceSingleTable(PlainSelect plainSelect, String tableName) {
+    public static void replaceSingleTable(PlainSelect plainSelect, String oriTableName, String tableName) {
         // replace table name
         List<PlainSelect> plainSelects = new ArrayList<>();
         plainSelects.add(plainSelect);
@@ -500,7 +500,7 @@ public class SqlReplaceHelper {
                     new SelectVisitorAdapter() {
                         @Override
                         public void visit(PlainSelect plainSelect) {
-                            plainSelect.getFromItem().accept(new TableNameReplaceVisitor(tableName));
+                            plainSelect.getFromItem().accept(new TableNameReplaceVisitor(oriTableName, tableName));
                         }
                     });
             List<Join> joins = painSelect.getJoins();
@@ -511,11 +511,13 @@ public class SqlReplaceHelper {
                         plainSelectList.add((PlainSelect) join.getRightItem());
                         List<PlainSelect> subPlainSelects = SqlSelectHelper.getPlainSelects(plainSelectList);
                         for (PlainSelect subPlainSelect : subPlainSelects) {
-                            subPlainSelect.getFromItem().accept(new TableNameReplaceVisitor(tableName));
+                            subPlainSelect.getFromItem().accept(new TableNameReplaceVisitor(oriTableName, tableName));
                         }
                     } else if (join.getRightItem() instanceof Table) {
                         Table table = (Table) join.getRightItem();
-                        table.setName(tableName);
+                        if (table.getName().equals(oriTableName)) {
+                            table.setName(tableName);
+                        }
                     }
                 }
             }

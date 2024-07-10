@@ -33,17 +33,18 @@ public class BaseTest extends BaseApplication {
     @Autowired
     private DomainRepository domainRepository;
 
-    protected SemanticQueryResp queryBySql(String sql) throws Exception {
-        return queryBySql(sql, User.getFakeUser());
+    protected SemanticQueryResp queryBySql(String sql, String oriTableName) throws Exception {
+        return queryBySql(sql, User.getFakeUser(), oriTableName);
     }
 
-    protected SemanticQueryResp queryBySql(String sql, User user) throws Exception {
-        return semanticLayerService.queryByReq(buildQuerySqlReq(sql), user);
+    protected SemanticQueryResp queryBySql(String sql, User user, String oriTableName) throws Exception {
+        return semanticLayerService.queryByReq(buildQuerySqlReq(sql, oriTableName), user);
     }
 
-    protected SemanticQueryReq buildQuerySqlReq(String sql) {
+    protected SemanticQueryReq buildQuerySqlReq(String sql, String oriTableName) {
         QuerySqlReq querySqlCmd = new QuerySqlReq();
         querySqlCmd.setSql(sql);
+        querySqlCmd.setDataSetName(oriTableName);
         querySqlCmd.setModelIds(DataUtils.getMetricAgentIModelIds());
         return querySqlCmd;
     }
